@@ -28,11 +28,14 @@ local isFlyingToPlayer = false
 local targetFlyPlayer = nil
 local flyConnection = nil
 
--- BIẾN CHO TÍNH NĂNG RADAR QUÉT TRỨNG (Nebula, Plasma, Supernova)
+-- BIẾN CHO TÍNH NĂNG RADAR QUÉT FULL TRỨNG & LỰA CHỌN
 local autoFarmEggEnabled = false
+local selectedEggName = "Tất cả (Tự động gần nhất)"
 local eggBlacklist = {}
 local currentTargetEgg = nil
 local eggFarmConnection = nil
+local eggEspBillboard = nil
+local eggTimer = 0
 
 pcall(function()
     local cu = playerGui:FindFirstChild("KienMenuM1")
@@ -194,7 +197,7 @@ local menuChinh = tao("Frame", {
     Name = "MenuChinh",
     AnchorPoint = Vector2.new(0.5, 0.5),
     Position = UDim2.new(0.5, 0, 0.5, 0),
-    Size = UDim2.fromOffset(650, 420),
+    Size = UDim2.fromOffset(680, 440),
     BackgroundColor3 = Mau.Nen,
     BorderSizePixel = 0,
     Visible = false,
@@ -209,7 +212,7 @@ local function capNhatTyLe()
     local camera = workspace.CurrentCamera
     if not camera then return end
     local viewport = camera.ViewportSize
-    tyLeGiaoDien.Scale = math.min(viewport.X / 690, viewport.Y / 460, 1)
+    tyLeGiaoDien.Scale = math.min(viewport.X / 720, viewport.Y / 480, 1)
 end
 capNhatTyLe()
 if workspace.CurrentCamera then
@@ -217,7 +220,7 @@ if workspace.CurrentCamera then
 end
 
 local thanhTieuDe = tao("Frame", {
-    Size = UDim2.new(1, 0, 0, 64),
+    Size = UDim2.new(1, 0, 0, 54),
     BackgroundColor3 = Mau.Panel,
     BorderSizePixel = 0,
 }, menuChinh)
@@ -230,11 +233,11 @@ tao("Frame", {
 }, thanhTieuDe)
 
 local logo = tao("Frame", {
-    Position = UDim2.new(0, 17, 0.5, -19),
-    Size = UDim2.fromOffset(38, 38),
+    Position = UDim2.new(0, 12, 0.5, -17),
+    Size = UDim2.fromOffset(34, 34),
     BackgroundColor3 = Mau.DoDam,
 }, thanhTieuDe)
-boGoc(logo, 12)
+boGoc(logo, 10)
 vien(logo, Mau.Do, 1)
 
 tao("TextLabel", {
@@ -243,38 +246,38 @@ tao("TextLabel", {
     Text = "K",
     TextColor3 = Mau.Trang,
     Font = Enum.Font.GothamBlack,
-    TextSize = 23,
+    TextSize = 20,
 }, logo)
 
 tao("TextLabel", {
-    Position = UDim2.new(0, 65, 0, 10),
-    Size = UDim2.new(0, 250, 0, 25),
+    Position = UDim2.new(0, 56, 0, 8),
+    Size = UDim2.new(0, 240, 0, 20),
     BackgroundTransparency = 1,
     Text = "KIÊN  |  MENU M1 PRO",
     TextColor3 = Mau.Trang,
     TextXAlignment = Enum.TextXAlignment.Left,
     Font = Enum.Font.GothamBlack,
-    TextSize = 19,
+    TextSize = 16,
 }, thanhTieuDe)
 
 tao("TextLabel", {
-    Position = UDim2.new(0, 66, 0, 35),
-    Size = UDim2.new(0, 280, 0, 17),
+    Position = UDim2.new(0, 57, 0, 28),
+    Size = UDim2.new(0, 260, 0, 16),
     BackgroundTransparency = 1,
-    Text = "BLACK NEBULA  •  √12kientomato  •  by ? Tiktok",
+    Text = "BLACK NEBULA  •  √12kientomato",
     TextColor3 = Mau.Do,
     TextXAlignment = Enum.TextXAlignment.Left,
     Font = Enum.Font.GothamMedium,
-    TextSize = 10,
+    TextSize = 9,
 }, thanhTieuDe)
 
 local fpsLabel = tao("TextLabel", {
-    Position = UDim2.new(1, -170, 0, 20),
-    Size = UDim2.fromOffset(75, 24),
+    Position = UDim2.new(1, -165, 0, 15),
+    Size = UDim2.fromOffset(70, 24),
     BackgroundColor3 = Mau.The,
     TextColor3 = Mau.XanhNhe,
     Text = "FPS: 60",
-    TextSize = 12,
+    TextSize = 11,
     Font = Enum.Font.GothamBold,
 }, thanhTieuDe)
 boGoc(fpsLabel, 6)
@@ -292,15 +295,15 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local nutKhoa = tao("TextButton", {
-    Size = UDim2.fromOffset(30, 30),
-    Position = UDim2.new(1, -85, 0, 17),
+    Size = UDim2.fromOffset(28, 28),
+    Position = UDim2.new(1, -85, 0, 13),
     BackgroundColor3 = Mau.The,
     Text = "🔓",
-    TextSize = 14,
+    TextSize = 13,
     Font = Enum.Font.GothamBold,
     AutoButtonColor = false,
 }, thanhTieuDe)
-boGoc(nutKhoa, 9)
+boGoc(nutKhoa, 8)
 
 nutKhoa.MouseButton1Click:Connect(function()
     isLocked = not isLocked
@@ -314,58 +317,61 @@ nutKhoa.MouseButton1Click:Connect(function()
 end)
 
 local nutDong = tao("TextButton", {
-    Position = UDim2.new(1, -45, 0, 17),
-    Size = UDim2.fromOffset(30, 30),
+    Position = UDim2.new(1, -45, 0, 13),
+    Size = UDim2.fromOffset(28, 28),
     BackgroundColor3 = Mau.The,
     Text = "×",
     TextColor3 = Mau.Do,
-    TextSize = 23,
+    TextSize = 21,
     Font = Enum.Font.GothamBold,
     AutoButtonColor = false,
 }, thanhTieuDe)
-boGoc(nutDong, 9)
+boGoc(nutDong, 8)
 
-local thanhBen = tao("Frame", {
-    Position = UDim2.new(0, 0, 0, 66),
-    Size = UDim2.new(0, 155, 1, -66),
-    BackgroundColor3 = Mau.Panel,
-    BorderSizePixel = 0,
+-- THANH TAB CHUYỂN TRANG NẰM NGANG Ở PHÍA DƯỚI TIÊU ĐỀ
+local thanhTabNgang = tao("Frame", {
+    Position = UDim2.new(0, 12, 0, 58),
+    Size = UDim2.new(1, -24, 0, 36),
+    BackgroundTransparency = 1,
 }, menuChinh)
 
-tao("UIListLayout", { Padding = UDim.new(0, 7), SortOrder = Enum.SortOrder.LayoutOrder }, thanhBen)
-tao("UIPadding", { PaddingTop = UDim.new(0, 17), PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }, thanhBen)
+tao("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal,
+    SortOrder = Enum.SortOrder.LayoutOrder,
+    Padding = UDim.new(0, 6),
+}, thanhTabNgang)
 
 local khungNoiDung = tao("Frame", {
-    Position = UDim2.new(0, 155, 0, 66),
-    Size = UDim2.new(1, -155, 1, -66),
+    Position = UDim2.new(0, 12, 0, 102),
+    Size = UDim2.new(1, -24, 1, -112),
     BackgroundTransparency = 1,
 }, menuChinh)
 
 local tieuDeTrang = tao("TextLabel", {
-    Position = UDim2.new(0, 20, 0, 15),
-    Size = UDim2.new(1, -40, 0, 30),
+    Position = UDim2.new(0, 8, 0, 4),
+    Size = UDim2.new(1, -16, 0, 24),
     BackgroundTransparency = 1,
     Text = "TRANG CHỦ / TỔNG QUAN",
     TextColor3 = Mau.Trang,
     TextXAlignment = Enum.TextXAlignment.Left,
     Font = Enum.Font.GothamBold,
-    TextSize = 17,
+    TextSize = 15,
 }, khungNoiDung)
 
 local moTaTrang = tao("TextLabel", {
-    Position = UDim2.new(0, 20, 0, 44),
-    Size = UDim2.new(1, -40, 0, 20),
+    Position = UDim2.new(0, 8, 0, 26),
+    Size = UDim2.new(1, -16, 0, 16),
     BackgroundTransparency = 1,
     Text = "Không gian của bạn. Phong cách của bạn.",
     TextColor3 = Mau.Mo,
     TextXAlignment = Enum.TextXAlignment.Left,
     Font = Enum.Font.Gotham,
-    TextSize = 11,
+    TextSize = 10,
 }, khungNoiDung)
 
 local khungCuon = tao("ScrollingFrame", {
-    Position = UDim2.new(0, 15, 0, 75),
-    Size = UDim2.new(1, -30, 1, -88),
+    Position = UDim2.new(0, 0, 0, 48),
+    Size = UDim2.new(1, 0, 1, -50),
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
     ScrollBarThickness = 3,
@@ -461,6 +467,7 @@ local function stopWalking()
     isFlyingToPlayer = false
     autoFarmEggEnabled = false
     currentTargetEgg = nil
+    if eggEspBillboard then eggEspBillboard:Destroy() eggEspBillboard = nil end
     if moveConnection then moveConnection:Disconnect() moveConnection = nil end
     if flyConnection then flyConnection:Disconnect() flyConnection = nil end
     if eggFarmConnection then eggFarmConnection:Disconnect() eggFarmConnection = nil end
@@ -523,7 +530,44 @@ local function batNhatVatPhamNhanh()
 end
 batNhatVatPhamNhanh()
 
-local function timTrungGanNhat()
+-- HỆ THỐNG QUÉT FULL TRỨNG, ESP TRỨNG ĐƯỢC CHỌN VÀ TỰ ĐỘNG ĐỔI SAU 5 GIÂY
+local function capNhatEspTrung(trung)
+    if eggEspBillboard then eggEspBillboard:Destroy() eggEspBillboard = nil end
+    if not trung then return end
+    local part = trung.PrimaryPart or trung:FindFirstChildWhichIsA("BasePart")
+    if part then
+        eggEspBillboard = tao("BillboardGui", {
+            Name = "EggEspTag",
+            Size = UDim2.fromOffset(160, 40),
+            StudsOffset = Vector3.new(0, 3, 0),
+            AlwaysOnTop = true,
+        }, part)
+        tao("TextLabel", {
+            Size = UDim2.fromScale(1, 1),
+            BackgroundTransparency = 1,
+            Text = "🎯 ĐANG ĐẬP: " .. trung.Name,
+            TextColor3 = Mau.XanhNhe,
+            TextSize = 12,
+            Font = Enum.Font.GothamBold,
+        }, eggEspBillboard)
+    end
+end
+
+local function layDanhSachTrung()
+    local ds = {"Tất cả (Tự động gần nhất)"}
+    local daCo = {}
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and (string.find(obj.Name, "Egg") or string.find(obj.Name, "Nebula") or string.find(obj.Name, "Plasma") or string.find(obj.Name, "Supernova")) then
+            if not daCo[obj.Name] then
+                daCo[obj.Name] = true
+                table.insert(ds, obj.Name)
+            end
+        end
+    end
+    return ds
+end
+
+local function timTrungTheoLuaChon()
     local khoangCachNhat = math.huge
     local trungChon = nil
     local myChar = nguoiDung.Character
@@ -531,13 +575,15 @@ local function timTrungGanNhat()
     if not myHrp then return nil end
 
     for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and (string.find(obj.Name, "Nebula") or string.find(obj.Name, "Plasma") or string.find(obj.Name, "Supernova") or string.find(obj.Name, "Egg")) then
-            local part = obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
+        if obj:IsA("Model") and (string.find(obj.Name, "Egg") or string.find(obj.Name, "Nebula") or string.find(obj.Name, "Plasma") or string.find(obj.Name, "Supernova")) then
+            local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
             if part and not eggBlacklist[obj] then
-                local dist = (part.Position - myHrp.Position).Magnitude
-                if dist < khoangCachNhat then
-                    khoangCachNhat = dist
-                    trungChon = obj
+                if selectedEggName == "Tất cả (Tự động gần nhất)" or obj.Name == selectedEggName then
+                    local dist = (part.Position - myHrp.Position).Magnitude
+                    if dist < khoangCachNhat then
+                        khoangCachNhat = dist
+                        trungChon = obj
+                    end
                 end
             end
         end
@@ -549,6 +595,7 @@ local function toggleAutoFarmEgg(state)
     autoFarmEggEnabled = state
     if autoFarmEggEnabled then
         hienThongBao("Radar Trứng: Đã Bật tự động quét & đập!")
+        eggTimer = tick()
         if eggFarmConnection then eggFarmConnection:Disconnect() end
         eggFarmConnection = RunService.RenderStepped:Connect(function()
             if not autoFarmEggEnabled then return end
@@ -557,10 +604,14 @@ local function toggleAutoFarmEgg(state)
             local hrp = char and char:FindFirstChild("HumanoidRootPart")
             if not humanoid or not hrp then return end
 
-            if not currentTargetEgg or not currentTargetEgg.Parent then
-                currentTargetEgg = timTrungGanNhat()
+            -- Tự động đổi quả trứng sau mỗi 5 giây hoặc khi quả cũ mất
+            if not currentTargetEgg or not currentTargetEgg.Parent or (tick() - eggTimer >= 5) then
+                if currentTargetEgg then eggBlacklist[currentTargetEgg] = true end
+                currentTargetEgg = timTrungTheoLuaChon()
+                eggTimer = tick()
+                capNhatEspTrung(currentTargetEgg)
                 if not currentTargetEgg then
-                    hienThongBao("Hết trứng! Đang quét lại...")
+                    hienThongBao("Không tìm thấy trứng phù hợp! Đang quét lại...")
                     task.wait(1)
                     return
                 end
@@ -569,7 +620,7 @@ local function toggleAutoFarmEgg(state)
             local eggPart = currentTargetEgg.PrimaryPart or currentTargetEgg:FindFirstChildWhichIsA("BasePart")
             if eggPart then
                 local dir = Vector3.new(eggPart.Position.X - hrp.Position.X, 0, eggPart.Position.Z - hrp.Position.Z)
-                if dir.Magnitude > 5 then
+                if dir.Magnitude > 4 then
                     humanoid:Move(dir.Unit, false)
                 else
                     humanoid:Move(Vector3.new(0,0,0), false)
@@ -584,11 +635,11 @@ local function toggleAutoFarmEgg(state)
         end)
     else
         if eggFarmConnection then eggFarmConnection:Disconnect() eggFarmConnection = nil end
+        if eggEspBillboard then eggEspBillboard:Destroy() eggEspBillboard = nil end
         currentTargetEgg = nil
         hienThongBao("Radar Trứng: Đã Tắt!")
     end
-end
-
+	end
 local function taoEspChoPlayer(player)
     if player == nguoiDung then return end
     local function onCharacterAdded(char)
@@ -643,6 +694,7 @@ local function toggleEsp(state)
         hienThongBao("Đã tắt định vị người chơi!")
     end
 end
+
 local function bayToiPlayer(targetPlayer)
     if flyConnection then flyConnection:Disconnect() end
     targetFlyPlayer = targetPlayer
@@ -777,7 +829,7 @@ local function xayDungTabTools(parent)
     local radarEggBtn = tao("TextButton", {
         Size = UDim2.new(1, 0, 0, 36),
         BackgroundColor3 = Mau.Panel,
-        Text = "🥚 Radar Quét Trứng (Nebula/Plasma): OFF",
+        Text = "🥚 Radar Trứng: OFF",
         TextColor3 = Mau.Trang,
         Font = Enum.Font.GothamBold,
         TextSize = 11,
@@ -785,6 +837,71 @@ local function xayDungTabTools(parent)
     }, parent)
     boGoc(radarEggBtn, 8)
     vien(radarEggBtn, Mau.Do, 1, 0.4)
+
+    -- KHUNG LỰA CHỌN QUẢ TRỨNG QUÉT FULL TRÊN MAP
+    local eggDropdownLabel = tao("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 22),
+        BackgroundTransparency = 1,
+        Text = "🎯 Chọn Loại Trứng Đập (Đang chọn: Tất cả):",
+        TextColor3 = Mau.Mo,
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, parent)
+
+    local scrollEggs = tao("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 0, 110),
+        BackgroundColor3 = Mau.Panel,
+        BorderSizePixel = 0,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = Mau.Do,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+    }, parent)
+    boGoc(scrollEggs, 8)
+    vien(scrollEggs, Mau.Do, 1, 0.4)
+    tao("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder }, scrollEggs)
+
+    local function taiDanhSachTrangTrung()
+        for _, child in ipairs(scrollEggs:GetChildren()) do
+            if child:IsA("TextButton") then child:Destroy() end
+        end
+        for _, tenTrung in ipairs(layDanhSachTrung()) do
+            local eBtn = tao("TextButton", {
+                Size = UDim2.new(1, 0, 0, 30),
+                BackgroundColor3 = (selectedEggName == tenTrung) and Mau.DoDam or Mau.The,
+                Text = "🥚 " .. tenTrung,
+                TextColor3 = Mau.Trang,
+                Font = Enum.Font.GothamBold,
+                TextSize = 11,
+                AutoButtonColor = false,
+                TextXAlignment = Enum.TextXAlignment.Left,
+            }, scrollEggs)
+            boGoc(eBtn, 6)
+            eBtn.MouseButton1Click:Connect(function()
+                selectedEggName = tenTrung
+                eggDropdownLabel.Text = "🎯 Chọn Loại Trứng Đập (Đang chọn: " .. tenTrung .. "):"
+                hienThongBao("Đã chọn loại trứng: " .. tenTrung)
+                taiDanhSachTrangTrung()
+            end)
+        end
+    end
+    taiDanhSachTrangTrung()
+
+    local refreshEggBtn = tao("TextButton", {
+        Size = UDim2.new(1, 0, 0, 32),
+        BackgroundColor3 = Color3.fromRGB(80, 80, 120),
+        Text = "🔄 Quét Lại Danh Sách Trứng Trên Map",
+        TextColor3 = Mau.Trang,
+        Font = Enum.Font.GothamBold,
+        TextSize = 11,
+        AutoButtonColor = false,
+    }, parent)
+    boGoc(refreshEggBtn, 6)
+    refreshEggBtn.MouseButton1Click:Connect(function()
+        taiDanhSachTrangTrung()
+        hienThongBao("Đã quét lại danh sách trứng!")
+    end)
 
     local hopBtn = tao("TextButton", {
         Size = UDim2.new(1, 0, 0, 36),
@@ -825,10 +942,10 @@ local function xayDungTabTools(parent)
     radarEggBtn.MouseButton1Click:Connect(function()
         autoFarmEggEnabled = not autoFarmEggEnabled
         if autoFarmEggEnabled then
-            radarEggBtn.Text = "🥚 Radar Quét Trứng (Nebula/Plasma): ON"
+            radarEggBtn.Text = "🥚 Radar Trứng: ON"
             radarEggBtn.BackgroundColor3 = Mau.DoDam
         else
-            radarEggBtn.Text = "🥚 Radar Quét Trứng (Nebula/Plasma): OFF"
+            radarEggBtn.Text = "🥚 Radar Trứng: OFF"
             radarEggBtn.BackgroundColor3 = Mau.Panel
         end
         toggleAutoFarmEgg(autoFarmEggEnabled)
@@ -955,7 +1072,7 @@ local danhSachTrang = {
         MoTa = "Chào mừng bạn đến với Kiên Script",
         Muc = {
             {Loai = "banner", TieuDe = "BLACK NEBULA M1", MoTa = "Giao diện đỏ đen độc quyền — by ? Tiktok"},
-            {Loai = "info", TieuDe = "TRẠNG THÁI", MoTa = "Radar Quét Trứng, Tăng FPS, Nhặt đồ nhanh sẵn sàng."},
+            {Loai = "info", TieuDe = "TRẠNG THÁI", MoTa = "Radar Quét Full Trứng, Tăng FPS, Nhặt đồ nhanh sẵn sàng."},
         },
     },
     NHAN_DOI = {
@@ -981,7 +1098,7 @@ local danhSachTrang = {
     },
     TOOLS = {
         TieuDe = "TIỆN ÍCH & RADAR TRỨNG",
-        MoTa = "Quét trứng Nebula/Plasma, Định vị player & Hop server",
+        MoTa = "Quét full trứng map, Định vị player & Hop server",
         Muc = {
             {Loai = "tools"},
         },
@@ -1081,89 +1198,4 @@ local function hienThiTrang(tenTrang)
                 danhSachNut[val] = nutM
 
                 nutM.Activated:Connect(function()
-                    kienCurrentMultiplier = val
-                    if val == 1 then hienThongBao("Chế độ 1x: Đã tắt (Bình thường)") else hienThongBao("Đã đổi sang: " .. val .. "x Đam!") end
-                    for mVal, btn in pairs(danhSachNut) do
-                        if mVal == val then hieuDung(btn, 0.15, {BackgroundColor3 = Mau.DoDam}) else hieuDung(btn, 0.15, {BackgroundColor3 = Mau.Panel}) end
-                    end
-                end)
-            end
-        elseif item.Loai == "autobase" then
-            local the = tao("Frame", { Size = UDim2.new(1, -4, 0, 180), BackgroundTransparency = 1 }, khungCuon)
-            local container = tao("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1 }, the)
-            tao("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, container)
-            xayDungTabAuto(container)
-        elseif item.Loai == "teleport" then
-            local the = tao("Frame", { Size = UDim2.new(1, -4, 0, 310), BackgroundTransparency = 1 }, khungCuon)
-            local container = tao("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1 }, the)
-            tao("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, container)
-            xayDungTabTeleport(container)
-        elseif item.Loai == "tools" then
-            local the = tao("Frame", { Size = UDim2.new(1, -4, 0, 220), BackgroundTransparency = 1 }, khungCuon)
-            local container = tao("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1 }, the)
-            tao("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, container)
-            xayDungTabTools(container)
-        else
-            taoThe(item.TieuDe, item.MoTa, 68)
-        end
-    end
-end
-
-local tenNut = {"TRANG_CHU", "NHAN_DOI", "AUTO_BASE", "TELEPORT", "TOOLS", "THONG_TIN"}
-local tenHienThi = {"TRANG CHỦ", "NHÂN ĐÔI", "AUTO BASE", "BAY PLAYER", "TIỆN ÍCH", "THÔNG TIN"}
-local cacNutBen = {}
-
-for index, name in ipairs(tenNut) do
-    local nut = tao("TextButton", {
-        Name = name,
-        LayoutOrder = index,
-        Size = UDim2.new(1, 0, 0, 38),
-        BackgroundColor3 = name == "TRANG_CHU" and Mau.DoDam or Mau.Panel,
-        Text = "   " .. tenHienThi[index],
-        TextColor3 = name == "TRANG_CHU" and Mau.Trang or Mau.Mo,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.GothamBold,
-        TextSize = 11,
-        AutoButtonColor = false,
-    }, thanhBen)
-    boGoc(nut, 9)
-    cacNutBen[name] = nut
-
-    nut.Activated:Connect(function()
-        for _, other in pairs(cacNutBen) do
-            hieuDung(other, 0.15, {BackgroundColor3 = Mau.Panel})
-            other.TextColor3 = Mau.Mo
-        end
-        hieuDung(nut, 0.15, {BackgroundColor3 = Mau.DoDam})
-        nut.TextColor3 = Mau.Trang
-        hienThiTrang(name)
-    end)
-end
-
-nutMoMenu.MouseButton1Click:Connect(function() menuChinh.Visible = not menuChinh.Visible end)
-nutDong.MouseButton1Click:Connect(function() menuChinh.Visible = false end)
-
-local kienOldNameCall
-kienOldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
-	local method = getnamecallmethod()
-	local args = {...}
-	if kienEnabled and not kienIsProcessing and kienCurrentMultiplier > 1 and self == EggHitRequest and method == "FireServer" then
-		local eggObject = args[1]
-		local baseHit = args[2] or 1
-		if eggObject then
-			kienIsProcessing = true
-			local extraCount = kienCurrentMultiplier - 1
-			task.spawn(function()
-				for i = 1, extraCount do
-					self:FireServer(eggObject, baseHit + i)
-				end
-				task.wait(1.0)
-				kienIsProcessing = false
-			end)
-		end
-	end
-	return kienOldNameCall(self, ...)
-end)
-
-hienThiTrang("TRANG_CHU")
-hienThongBao("√12kientomato M1 — Sẵn sàng hoạt động!")
+                    kienCurrentM	
